@@ -1,6 +1,25 @@
 machine:
   timezone:
     Asia/Tokyo
+  environment:
+    GOVERSION: 1.7.3
+    GOROOT: "/home/ubuntu/go"
+    PATH: "/home/ubuntu/go/bin:$PATH"
+dependencies:
+  cache_directories:
+    - "/home/ubuntu/.go"
+  pre:
+    - >
+      cd /home/ubuntu;
+      if [[ ! -e /home/ubuntu/.go/$GOERSION/bin/go ]]; then
+        curl https://storage.googleapis.com/golang/go$GOVERSION.linux-amd64.tar.gz | tar -xz;
+        go get -u github.com/jstemmer/go-junit-report;
+        mkdir -p ~/.go;
+        cp -rp ~/go ~/.go/$GOVERSION;
+      else
+        cp -rp ~/.go/$GOVERSION ~/go;
+      fi
+    - go version
 deployment:
   release:
     branch: master
@@ -8,4 +27,4 @@ deployment:
       - go get github.com/mitchellh/gox
       - go get github.com/tcnksm/ghr
       - gox --osarch "linux/amd64 darwin/amd64" --output "dist/{{.Dir}}_{{.OS}}_{{.Arch}}"
-      - ghr -t $GITHUB_TOKEN -u $USERNAME -r $CIRCLE_PROJECT_REPONAME -replace `cat release_tag` dist/
+      - ghr -t $GITHUB_TOKEN -u $USERNAME -r $CIRCLE_PROJECT_REPONAME --replace `cat release_tag` dist/
